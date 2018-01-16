@@ -21,6 +21,7 @@ class LinkCutTree {
 
   def link(v: Int, w: Int): Unit = {
     if (!vertices(v).isRoot) throw new IllegalArgumentException
+    if (findRoot(w) == v) throw new IllegalArgumentException
     access(v)
     access(w)
     vertices(w).auxTree.merge(vertices(v).auxTree)
@@ -49,14 +50,13 @@ class LinkCutTree {
     vertex.auxTree.splay()
     vertex.auxTree.cutRightChild()
     var root = vertex.auxTree.root
-    var pathParent = root.aggregation.parent
-
-    while (pathParent.parent != pathParent) {
+    var pathRoot = root.aggregation
+    while (!pathRoot.isRoot) {
+      val pathParent = pathRoot.parent
       pathParent.auxTree.splay()
       pathParent.auxTree.cutRightChild()
-      pathParent.auxTree.merge(root)
-      root = pathParent.auxTree.root
-      pathParent = root.aggregation.parent
+      root = pathParent.auxTree.merge(root)
+      pathRoot = root.aggregation
     }
     vertex.auxTree.splay()
   }
