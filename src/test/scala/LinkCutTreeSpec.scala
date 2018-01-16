@@ -1,11 +1,11 @@
 import org.scalatest.FlatSpec
-import ru.ifmo.ctddev.advanced_structures.zamyatin.{LinkCutTree, SplayTree}
+import ru.ifmo.ctddev.advanced_structures.zamyatin.{LinkCutTreeFast, SplayTree}
 
 import scala.util.{Random, Try}
 
 class LinkCutTreeSpec extends FlatSpec {
   "Link cut tree" should "do correct operations with small test" in {
-    val linkCutTree = new LinkCutTree
+    val linkCutTree = new LinkCutTreeFast
     val (v1, v2, v3) = (linkCutTree.add(), linkCutTree.add(), linkCutTree.add())
     assert(linkCutTree.findRoot(v1) == v1 &&
       linkCutTree.findRoot(v2) == v2 &&
@@ -26,7 +26,7 @@ class LinkCutTreeSpec extends FlatSpec {
   }
 
   "Link cut tree" should "do correct operations with small hand test #1" in {
-    val linkCutTree = new LinkCutTree
+    val linkCutTree = new LinkCutTreeFast
     val vs = (0 until 7).map(_ => linkCutTree.add()).toArray
     linkCutTree.link(3, 1)
     linkCutTree.link(2, 5)
@@ -38,7 +38,7 @@ class LinkCutTreeSpec extends FlatSpec {
   }
 
   "Link cut tree" should "do correct operations with small hand test #2" in {
-    val linkCutTree = new LinkCutTree
+    val linkCutTree = new LinkCutTreeFast
     val vs = (0 until 5).map(_ => linkCutTree.add()).toArray
     linkCutTree.link(1, 0)
     linkCutTree.link(2, 1)
@@ -54,7 +54,7 @@ class LinkCutTreeSpec extends FlatSpec {
 
 
 
-  def doAllLinkAllCutQueries(linkCutTree: LinkCutTree, n: Int, q: Int, seed: Int) = {
+  def doAllLinkAllCutQueries(linkCutTree: LinkCutTreeFast, n: Int, q: Int, seed: Int) = {
     val random = new java.util.Random(seed)
 
     def check = for (i <- 0 until n) {
@@ -74,7 +74,7 @@ class LinkCutTreeSpec extends FlatSpec {
     }
   }
 
-  def doLinkCutQueries(linkCutTree: LinkCutTree, n: Int, q: Int, seed: Int) = {
+  def doLinkCutQueries(linkCutTree: LinkCutTreeFast, n: Int, q: Int, seed: Int) = {
     val random = new java.util.Random(seed)
 
     def check = for (i <- 0 until n) {
@@ -93,19 +93,19 @@ class LinkCutTreeSpec extends FlatSpec {
 
 
   "Link cut tree" should "do correct link and cut operations with small random tests #1" in {
-    doAllLinkAllCutQueries(new LinkCutTree, 5, 4, 281)
+    doAllLinkAllCutQueries(new LinkCutTreeFast, 5, 4, 281)
   }
 
   "Link cut tree" should "do correct link and cut operations with small random tests #2" in {
-    doAllLinkAllCutQueries(new LinkCutTree, 10, 100, 239)
+    doAllLinkAllCutQueries(new LinkCutTreeFast, 10, 100, 239)
   }
 
   "Link cut tree" should "do correct link and cut operations with random tests #1" in {
-    doLinkCutQueries(new LinkCutTree, 10, 1000, 39)
+    doLinkCutQueries(new LinkCutTreeFast, 10, 1000, 39)
   }
 
   "Link cut tree" should "do correct link and cut operations with random tests #2" in {
-    doLinkCutQueries(new LinkCutTree, 100, 10000, 39)
+    doLinkCutQueries(new LinkCutTreeFast, 100, 10000, 39)
   }
 
 }

@@ -2,7 +2,19 @@ package ru.ifmo.ctddev.advanced_structures.zamyatin
 
 import scala.collection.mutable.ArrayBuffer
 
-class LinkCutTree {
+trait LinkCutTree {
+  def add(): Int
+
+  def link(v: Int, w: Int): Unit
+
+  def cut(v: Int): Unit
+
+  def findRoot(v: Int): Int
+
+  def findRootSlow(v: Int): Int
+}
+
+class LinkCutTreeFast extends LinkCutTree {
 
   class Vertex(var id: Int) {
     var parent: Vertex = this
@@ -12,7 +24,7 @@ class LinkCutTree {
     override def toString: String = s"Vertex($id,${parent.id})"
   }
 
-  private var vertices: ArrayBuffer[Vertex] = ArrayBuffer.empty
+  protected var vertices: ArrayBuffer[Vertex] = ArrayBuffer.empty
 
   def add(): Int = {
     vertices += new Vertex(vertices.length)
