@@ -17,18 +17,14 @@ trait LinkCutTree {
 
 }
 
+class Vertex(var id: Int) {
+  var parent: Vertex = this
+  var auxTree: SplayTree = SplayTree.create(this)
+  def isRoot = parent == this
+  override def toString: String = s"Vertex($id,${parent.id})"
+}
+
 class LinkCutTreeFast extends LinkCutTree {
-
-  class Vertex(var id: Int) {
-    var parent: Vertex = this
-    var auxTree: SplayTree[Vertex, (Vertex, Int)] = SplayTree.create(this, v =>
-      (if (v.getLeft == null) v.x else v.getLeft.aggregation._1,
-        if (v.getLeft == null) 0 else v.getLeft.aggregation._2 + 1 + (if (v.getRight == null) 0 else v.getRight.aggregation._2))
-    )
-
-    def isRoot = parent == this
-    override def toString: String = s"Vertex($id,${parent.id})"
-  }
 
   protected var vertices: ArrayBuffer[Vertex] = ArrayBuffer.empty
 

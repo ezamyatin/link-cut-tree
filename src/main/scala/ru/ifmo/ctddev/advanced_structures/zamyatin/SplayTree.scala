@@ -1,26 +1,25 @@
 package ru.ifmo.ctddev.advanced_structures.zamyatin
 
-import scala.annotation.tailrec
-import scala.util.Random
+class SplayTree(val x: Vertex,
+                private var left: SplayTree,
+                private var right: SplayTree) {
 
-class SplayTree[T, V](val x: T,
-                      private var left: SplayTree[T, V],
-                      private var right: SplayTree[T, V],
-                      private var f: SplayTree[T, V] => V) {
+  private var parent: SplayTree = this
 
-  private var parent: SplayTree[T, V] = this
+  private var pathRoot: Vertex = x
 
-  private var agg: V = f(this)
+  private var size: Int = 1
 
-  private def recompute(): Unit = {
-    agg = f(this)
+  @inline private def recompute(): Unit = {
+    pathRoot = if (left == null) x else left.pathRoot
+    size = (if (left == null) 0 else left.size) + 1 + (if (right == null) 0 else right.size)
   }
 
   def isRoot = parent == this
 
-  def aggregation: V = agg
+  def aggregation: (Vertex, Int) = (x, size)
 
-  private def doIfNotNull[E](t: SplayTree[T, V], f: (SplayTree[T, V] => Unit)) = {
+  private def doIfNotNull[E](t: SplayTree, f: (SplayTree => Unit)) = {
     if (t != null)
       f(t)
   }
@@ -82,11 +81,11 @@ class SplayTree[T, V](val x: T,
     }
   }
 
-  def rightmost: SplayTree[T, V] = if (right == null) this else right.rightmost//right.fold(this)(_.rightmost)
+  def rightmost: SplayTree = if (right == null) this else right.rightmost//right.fold(this)(_.rightmost)
 
-  def leftmost: SplayTree[T, V] = if (left == null) this else left.leftmost//left.fold(this)(_.leftmost)
+  def leftmost: SplayTree = if (left == null) this else left.leftmost//left.fold(this)(_.leftmost)
 
-  def merge(other: SplayTree[T, V]): SplayTree[T, V] = {if (other != this) {
+  def merge(other: SplayTree): SplayTree = {if (other != this) {
     if (!isRoot) throw new IllegalArgumentException
     val v = rightmost
     v.splay()
@@ -115,7 +114,7 @@ class SplayTree[T, V](val x: T,
     recompute()
   }
 
-  def root: SplayTree[T, V] = {
+  def root: SplayTree = {
     splay()
     this
   }
@@ -129,7 +128,7 @@ class SplayTree[T, V](val x: T,
 }
 
 object SplayTree {
-  def create[T, V](x: T, f: (SplayTree[T, V] => V)): SplayTree[T, V] = new SplayTree[T, V](x, null, null, f)
+  def create(x: Vertex): SplayTree = new SplayTree(x, null, null)
   var time: Double = 0
   var count = 0
 
