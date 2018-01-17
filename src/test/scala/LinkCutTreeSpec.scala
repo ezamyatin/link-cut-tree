@@ -1,5 +1,5 @@
 import org.scalatest.FlatSpec
-import ru.ifmo.ctddev.advanced_structures.zamyatin.{LinkCutTreeFast, SplayTree}
+import ru.ifmo.ctddev.advanced_structures.zamyatin.{LinkCutTreeFast, LinkCutTreeSlow, SplayTree}
 
 import scala.util.{Random, Try}
 
@@ -54,58 +54,72 @@ class LinkCutTreeSpec extends FlatSpec {
 
 
 
-  def doAllLinkAllCutQueries(linkCutTree: LinkCutTreeFast, n: Int, q: Int, seed: Int) = {
+  def doAllLinkAllCutQueries(n: Int, q: Int, seed: Int) = {
     val random = new java.util.Random(seed)
+    val linkCutTree = new LinkCutTreeFast
+    val linkCutTreeSlow = new LinkCutTreeSlow
 
     def check = for (i <- 0 until n) {
-      assert(linkCutTree.findRoot(i) == linkCutTree.findRootSlow(i))
+      assert(linkCutTree.findRoot(i) == linkCutTreeSlow.findRoot(i))
     }
 
-    (0 until n).foreach(_ => linkCutTree.add())
+    (0 until n).foreach(_ => {linkCutTree.add(); linkCutTreeSlow.add()})
     for (_ <- 0 until q) {
       var (v1, v2) = (random.nextInt(n), random.nextInt(n))
-      v1 = linkCutTree.findRootSlow(v1)
+      v1 = linkCutTreeSlow.findRoot(v1)
       Try(linkCutTree.link(v1, v2))
+      Try(linkCutTreeSlow.link(v1, v2))
       check
     }
     for (v <- 0 until n) {
       Try(linkCutTree.cut(v))
+      Try(linkCutTreeSlow.cut(v))
       check
     }
   }
 
-  def doLinkCutQueries(linkCutTree: LinkCutTreeFast, n: Int, q: Int, seed: Int) = {
+  def doLinkCutQueries(n: Int, q: Int, seed: Int) = {
     val random = new java.util.Random(seed)
 
+    val linkCutTree = new LinkCutTreeFast
+    val linkCutTreeSlow = new LinkCutTreeSlow
+
     def check = for (i <- 0 until n) {
-      assert(linkCutTree.findRoot(i) == linkCutTree.findRootSlow(i))
+      assert(linkCutTree.findRoot(i) == linkCutTreeSlow.findRoot(i))
     }
 
-    (0 until n).foreach(_ => linkCutTree.add())
+    (0 until n).foreach(_ => {linkCutTree.add(); linkCutTreeSlow.add()})
+
     for (i <- 0 until q) {
       var (v1, v2) = (random.nextInt(n), random.nextInt(n))
-      v1 = linkCutTree.findRootSlow(v1)
-      if (random.nextBoolean()) Try(linkCutTree.link(v1, v2))
-      else Try(linkCutTree.cut(v2))
+      v1 = linkCutTreeSlow.findRoot(v1)
+      if (random.nextBoolean()) {
+        Try(linkCutTree.link(v1, v2))
+        Try(linkCutTreeSlow.link(v1, v2))
+      }
+      else {
+        Try(linkCutTree.cut(v2))
+        Try(linkCutTreeSlow.cut(v2))
+      }
       check
     }
   }
 
 
   "Link cut tree" should "do correct link and cut operations with small random tests #1" in {
-    doAllLinkAllCutQueries(new LinkCutTreeFast, 5, 4, 281)
+    doAllLinkAllCutQueries(5, 4, 281)
   }
 
   "Link cut tree" should "do correct link and cut operations with small random tests #2" in {
-    doAllLinkAllCutQueries(new LinkCutTreeFast, 10, 100, 239)
+    doAllLinkAllCutQueries(10, 100, 239)
   }
 
   "Link cut tree" should "do correct link and cut operations with random tests #1" in {
-    doLinkCutQueries(new LinkCutTreeFast, 10, 1000, 39)
+    doLinkCutQueries(10, 1000, 39)
   }
 
   "Link cut tree" should "do correct link and cut operations with random tests #2" in {
-    doLinkCutQueries(new LinkCutTreeFast, 100, 10000, 39)
+    doLinkCutQueries(100, 10000, 39)
   }
 
 }

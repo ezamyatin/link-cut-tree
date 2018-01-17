@@ -10,21 +10,28 @@ class SplayTree(val x: Vertex,
 
   private var size: Int = 1
 
-  @inline private def recompute(): Unit = {
-    pathRoot = if (left == null) x else left.pathRoot
-    size = (if (left == null) 0 else left.size) + 1 + (if (right == null) 0 else right.size)
+  private def recompute(): Unit = {
+    pathRoot = mapOrElse(left, _.pathRoot, x)
+    size = mapOrElse(left, _.size, 0) + 1 + mapOrElse(right, _.size, 0)
   }
 
   def isRoot = parent == this
 
-  def aggregation: (Vertex, Int) = (x, size)
+  def getPathRoot = pathRoot
 
-  private def doIfNotNull[E](t: SplayTree, f: (SplayTree => Unit)) = {
+  def getSubtreeSize = size
+
+  @inline private def mapOrElse[E](t: SplayTree, f: (SplayTree => E), default: E): E = {
+    if (t != null) f(t)
+    else default
+  }
+
+  @inline private def doIfNotNull[E](t: SplayTree, f: (SplayTree => Unit)) = {
     if (t != null)
       f(t)
   }
 
-  private def rotate(): Unit = SplayTree.measure{
+  private def rotate(): Unit = {
     val parentWasRoot = parent.isRoot
 
     val pp = parent.parent
@@ -34,14 +41,12 @@ class SplayTree(val x: Vertex,
 
     } else if (parent.left == this) {
       parent.left = right
-      //right.foreach(_.parent = parent)
       doIfNotNull(right, _.parent = parent)
 
       parent.parent = this
       right = parent
     } else if (parent.right == this) {
       parent.right = left
-      //left.foreach(_.parent = parent)
       doIfNotNull(left, _.parent = parent)
 
       parent.parent = this
@@ -59,19 +64,17 @@ class SplayTree(val x: Vertex,
       parent = this
     }
 
-
     oldParent.recompute()
     recompute()
     pp.recompute()
-
   }
 
   def splay(): Unit = {
     while (!isRoot) {
       if (parent.isRoot)
           rotate()
-      else if ((parent.parent.left == (parent) && parent.left == (this)) ||
-          (parent.parent.right == (parent) && parent.right == (this))) {
+      else if ((parent.parent.left == parent && parent.left == this) ||
+          (parent.parent.right == parent && parent.right == this)) {
           parent.rotate()
           rotate()
       } else {
@@ -81,9 +84,9 @@ class SplayTree(val x: Vertex,
     }
   }
 
-  def rightmost: SplayTree = if (right == null) this else right.rightmost//right.fold(this)(_.rightmost)
+  def rightmost: SplayTree = mapOrElse(right, _.rightmost, this)//if (right == null) this else right.rightmost
 
-  def leftmost: SplayTree = if (left == null) this else left.leftmost//left.fold(this)(_.leftmost)
+  def leftmost: SplayTree = mapOrElse(left, _.leftmost, this)//if (left == null) this else left.leftmost
 
   def merge(other: SplayTree): SplayTree = {if (other != this) {
     if (!isRoot) throw new IllegalArgumentException
@@ -101,16 +104,14 @@ class SplayTree(val x: Vertex,
   //def toList: List[T] = left.fold(List.empty[T])(_.toList) ++ List(x) ++ right.fold(List.empty[T])(_.toList)
 
   def cutLeftChild(): Unit = {
-    //left.foreach(v => v.parent = v)
     doIfNotNull(left, v => v.parent = v)
-    left = null//None
+    left = null
     recompute()
   }
   
   def cutRightChild(): Unit = {
-    //right.foreach(v => v.parent = v)
     doIfNotNull(right, v => v.parent = v)
-    right = null//None
+    right = null
     recompute()
   }
 
@@ -123,8 +124,7 @@ class SplayTree(val x: Vertex,
 
   def getRight = right
 
-  //override def toString: String = s"SplayTree($x,${left.map(_.x)},${right.map(_.x)},${parent.x})"
-
+  override def toString: String = s"SplayTree($x,${if (left == null) "null" else left.x},${if (right == null) "null" else right.x},${parent.x})"
 }
 
 object SplayTree {

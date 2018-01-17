@@ -52,12 +52,12 @@ class LinkCutTreeFast extends LinkCutTree {
 
   def findRoot(v: Int): Int = {
     access(v)
-    vertices(v).auxTree.aggregation._1.id
+    vertices(v).auxTree.getPathRoot.id
   }
 
   def getDepth(v: Int): Int = {
     access(v)
-    vertices(v).auxTree.aggregation._2
+    vertices(v).auxTree.getSubtreeSize
   }
 
   def findRootSlow(v: Int): Int = {
@@ -65,26 +65,55 @@ class LinkCutTreeFast extends LinkCutTree {
     else findRootSlow(vertices(v).parent.id)
   }
 
-  var sum = 0
-  var t = 0
-
   def access(v: Int): Unit = {
-    t += 1
-    sum += 1
     val vertex = vertices(v)
     vertex.auxTree.splay()
     vertex.auxTree.cutRightChild()
     var root = vertex.auxTree.root
-    var pathRoot = root.aggregation._1
+    var pathRoot = root.getPathRoot
     while (!pathRoot.isRoot) {
-      sum += 1
       val pathParent = pathRoot.parent
       pathParent.auxTree.splay()
       pathParent.auxTree.cutRightChild()
       root = pathParent.auxTree.merge(root)
-      pathRoot = root.aggregation._1
+      pathRoot = root.getPathRoot
     }
     vertex.auxTree.splay()
   }
 
 }
+
+class LinkCutTreeSlow extends LinkCutTree {
+
+  val vertices: ArrayBuffer[Int] = ArrayBuffer.empty[Int]
+  var sum = 0
+  var t = 0
+  def add(): Int = {
+    vertices += vertices.size
+    vertices.size - 1
+  }
+
+  def link(v: Int, w: Int): Unit = {
+    if (vertices(v) != v) throw new IllegalArgumentException
+    if (findRoot(w) == v) throw new IllegalArgumentException
+    vertices(v) = w
+  }
+
+  def cut(v: Int): Unit = {
+    if (vertices(v) == v) throw new IllegalArgumentException
+    vertices(v) = v
+  }
+
+  def findRoot(v: Int): Int = {
+    if (vertices(v) == v) v
+    else findRoot(vertices(v))
+  }
+
+  override def findRootSlow(v: Int): Int = findRoot(v)
+
+
+  override def getDepth(v: Int): Int = if (vertices(v) == v) 0
+  else 1 + getDepth(vertices(v))
+
+}
+
