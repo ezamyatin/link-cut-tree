@@ -12,13 +12,19 @@ trait LinkCutTree {
   def findRoot(v: Int): Int
 
   def findRootSlow(v: Int): Int
+
+  def getDepth(v: Int): Int
+
 }
 
 class LinkCutTreeFast extends LinkCutTree {
 
   class Vertex(var id: Int) {
     var parent: Vertex = this
-    var auxTree: SplayTree[Vertex, Vertex] = SplayTree.create(this, v => v.getLeft.fold(v.x)(_.aggregation))
+    var auxTree: SplayTree[Vertex, (Vertex, Int)] = SplayTree.create(this, v =>
+      (if (v.getLeft == null) v.x else v.getLeft.aggregation._1,
+        if (v.getLeft == null) 0 else v.getLeft.aggregation._2 + 1 + (if (v.getRight == null) 0 else v.getRight.aggregation._2))
+    )
 
     def isRoot = parent == this
     override def toString: String = s"Vertex($id,${parent.id})"
@@ -38,6 +44,7 @@ class LinkCutTreeFast extends LinkCutTree {
     access(w)
     vertices(w).auxTree.merge(vertices(v).auxTree)
     vertices(v).parent = vertices(w)
+    vertices(w).auxTree.splay()
   }
 
   def cut(v: Int): Unit = {
@@ -49,7 +56,12 @@ class LinkCutTreeFast extends LinkCutTree {
 
   def findRoot(v: Int): Int = {
     access(v)
-    vertices(v).auxTree.aggregation.id
+    vertices(v).auxTree.aggregation._1.id
+  }
+
+  def getDepth(v: Int): Int = {
+    access(v)
+    vertices(v).auxTree.aggregation._2
   }
 
   def findRootSlow(v: Int): Int = {
@@ -57,18 +69,24 @@ class LinkCutTreeFast extends LinkCutTree {
     else findRootSlow(vertices(v).parent.id)
   }
 
+  var sum = 0
+  var t = 0
+
   def access(v: Int): Unit = {
+    t += 1
+    sum += 1
     val vertex = vertices(v)
     vertex.auxTree.splay()
     vertex.auxTree.cutRightChild()
     var root = vertex.auxTree.root
-    var pathRoot = root.aggregation
+    var pathRoot = root.aggregation._1
     while (!pathRoot.isRoot) {
+      sum += 1
       val pathParent = pathRoot.parent
       pathParent.auxTree.splay()
       pathParent.auxTree.cutRightChild()
       root = pathParent.auxTree.merge(root)
-      pathRoot = root.aggregation
+      pathRoot = root.aggregation._1
     }
     vertex.auxTree.splay()
   }
